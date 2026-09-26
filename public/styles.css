@@ -67,3 +67,6 @@ body[data-color-vision="achromatopsia"]{--green:#3f3f46;--lime:#e4e4e7;--orange:
 body.dark[data-color-vision="protanopia"],body.dark[data-color-vision="deuteranopia"]{--green:#8798ef;--lime:#343123;--soft:#171821;--focus:#aeb9ff}
 body.dark[data-color-vision="tritanopia"]{--green:#e39ab8;--lime:#263834;--soft:#21171d;--focus:#f2b0ca}
 body.dark[data-color-vision="achromatopsia"]{--green:#e4e4e7;--lime:#303033;--soft:#18181b;--orange:#a1a1aa;--focus:#fff}
+
+/* Fotos de perfil */
+.avatar img,.profile-avatar img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}.avatar span,.profile-avatar span{display:grid;place-items:center;width:100%;height:100%}.profile-avatar{overflow:hidden}
