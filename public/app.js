@@ -60,27 +60,3 @@ function setupAccessibility(){
   applyA11y();
 }
 setupAccessibility();
-
-// Garante que o cliente do Supabase está inicializado com a tua Publishable Key
-const SUPABASE_URL = 'https://okxtbwobzrcynkbepsab.supabase.co';
-const SUPABASE_KEY = 'SUA_PUBLISHABLE_KEY_AQUI'; // Chave Publishable/Anon do painel
-
-const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// Na função de envio do formulário:
-const { data, error } = await _supabase
-  .from('cadastro')
-  .insert([
-    {
-      nome: nomeInput.value,
-      usuario: usuarioInput.value,
-      email: emailInput.value,
-      senha: senhaInput.value
-    }
-  ]);
-
-if (error) {
-  alert('Erro ao cadastrar: ' + error.message);
-} else {
-  alert('Conta criada com sucesso!');
-}
