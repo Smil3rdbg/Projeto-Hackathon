@@ -19,6 +19,12 @@ CREATE TABLE post(
  descricao VARCHAR(1228),
  imagem_url TEXT
 );
+CREATE TABLE IF NOT EXISTS curtida(
+ id SERIAL PRIMARY KEY,
+ id_cadastro INT NOT NULL REFERENCES cadastro(id) ON DELETE CASCADE,
+ id_post INT NOT NULL REFERENCES post(id) ON DELETE CASCADE,
+ UNIQUE(id_cadastro,id_post)
+);
 CREATE TABLE comentario(
  id SERIAL PRIMARY KEY,
  id_cadastro INT NOT NULL REFERENCES cadastro(id) ON DELETE CASCADE,
@@ -36,7 +42,7 @@ GRANT USAGE ON SCHEMA public TO nexa_app;
 
 -- Permite consultar e alterar dados nas tabelas do site
 GRANT SELECT, INSERT, UPDATE, DELETE
-ON TABLE public.cadastro, public.area, public.post, public.comentario
+ON TABLE public.cadastro, public.area, public.post, public.comentario, public.curtida
 TO nexa_app;
 
 -- Permite gerar os IDs automáticos
