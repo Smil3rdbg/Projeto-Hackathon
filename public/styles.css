@@ -79,3 +79,14 @@ body.dark[data-color-vision="achromatopsia"]{--green:#e4e4e7;--lime:#303033;--so
 .post-author-info b,.post-author-info small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .post-author-info small{color:var(--muted);font-size:12px}
 .post-more{margin-left:auto!important;flex:0 0 auto}
+
+.logo-home {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font: inherit;
+    color: inherit;
+}
