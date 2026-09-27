@@ -33,21 +33,57 @@ function logo(){
         </button>
     `;
 }
-function logout(){
-    localStorage.removeItem('nexa_user');
-    localStorage.removeItem('nexa_token');
 
-    state.user = null;
-    state.token = null;
-    state.view = 'feed';
-
-    landing();
-}
 function landing(){app.innerHTML=`<main class="landing"><nav>${logo()}<div><button class="link" data-auth="login">Entrar</button><button class="primary" data-auth="register">Criar conta</button></div></nav><section class="landing-grid"><div><span class="eyebrow">CONEXÕES QUE GERAM OPORTUNIDADES</span><h1>Encontre pessoas que <em>entendem</em> o que você faz.</h1><p>Compartilhe experiências, descubra profissionais da sua área e transforme conhecimento em conexões reais.</p><div class="actions"><button class="primary large" data-auth="register">Começar agora →</button><button class="secondary large" data-auth="login">Já tenho uma conta</button></div><div class="proof"><b>+2.400</b> profissionais conectados <span>•</span> <b>120</b> áreas ativas</div></div><div class="hero-visual"><div class="float-card a"><b>Design de Produto</b><small>328 profissionais</small></div><div class="orb">N</div><div class="float-card b"><b>Desenvolvimento</b><small>512 profissionais</small></div></div></section><section class="benefits"><article><b>01</b><h3>Descubra</h3><p>Encontre conteúdo e pessoas por área de atuação.</p></article><article><b>02</b><h3>Compartilhe</h3><p>Publique aprendizados, projetos e experiências.</p></article><article><b>03</b><h3>Conecte</h3><p>Crie uma rede relevante para sua jornada.</p></article></section></main>`;document.querySelectorAll('[data-auth]').forEach(b=>b.onclick=()=>auth(b.dataset.auth))}
 function auth(mode){const login=mode==='login';app.innerHTML=`<main class="auth-page"><section class="auth-art"><div>${logo()}<h1>${login?'Que bom ter você de volta.':'Sua próxima conexão começa aqui.'}</h1><p>Nexa aproxima pessoas por conhecimento, experiência e interesses profissionais.</p></div><small>© 2026 Nexa</small></section><section class="auth-panel"><button class="back" id="back">← Voltar</button><div class="auth-box"><span class="eyebrow">${login?'ACESSAR CONTA':'CRIAR CONTA'}</span><h2>${login?'Entre na Nexa':'Faça parte da Nexa'}</h2><p>${login?'Continue de onde parou.':'Leva menos de um minuto.'}</p><form id="authForm">${login?'':`<label>Nome<input name="displayName" required maxlength="50" placeholder="Como devemos chamar você?"></label><label>Usuário<input name="username" required minlength="3" placeholder="seu.usuario"></label>`}<label>E-mail<input name="email" type="email" required maxlength="50" placeholder="voce@email.com"></label><label>Senha<input name="password" type="password" required minlength="8" placeholder="••••••••"></label>${login?'':`<label>Confirmar senha<input name="confirmPassword" type="password" required minlength="8" placeholder="••••••••"></label>`}<button class="primary full">${login?'Entrar':'Criar minha conta'}</button></form><button class="switch" id="swap">${login?'Ainda não tem conta? Criar agora':'Já possui conta? Entrar'}</button></div></section></main>`;document.querySelector('#back').onclick=landing;document.querySelector('#swap').onclick=()=>auth(login?'register':'login');document.querySelector('#authForm').onsubmit=async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.target));try{const data=await api('/auth/'+(login?'login':'register'),{method:'POST',body:JSON.stringify(body)});state.user=data.user;state.token=data.token;localStorage.setItem('nexa_user',JSON.stringify(state.user));if(state.token)localStorage.setItem('nexa_token',state.token);await load();shell();if(!login)toast('Conta criada com sucesso!')}catch(err){toast(err.message)}}}
 async function load(area=''){state.selectedArea=area;state.feed=await api('/feed'+(area?`?area=${encodeURIComponent(area)}`:''));state.areas=await api('/areas')}
 function nav(){return `<aside class="nav"><div>${logo()}<div class="nav-items"><button class="nav-btn ${state.view==='feed'?'active':''}" data-view="feed">⌂ <span>Início</span></button><button class="nav-btn ${state.view==='explore'?'active':''}" data-view="explore">⌕ <span>Explorar</span></button><button class="nav-btn ${state.view==='create'?'active':''}" data-view="create">＋ <span>Publicar</span></button></div></div><div class="mini-profile" id="myProfile" role="button" tabindex="0" title="Abrir meu perfil">${avatar(state.user)}<div><b>${esc(state.user?.nome||state.user?.displayName||'Você')}</b><small>Ver perfil</small></div><button id="logout" title="Sair">↗</button></div></aside>`}
-function shell(){app.innerHTML=`<div class="app-shell">${nav()}<main class="content" id="content"></main></div>`;document.querySelectorAll('[data-view]').forEach(b=>b.onclick=async()=>{state.view=b.dataset.view;if(state.view==='feed')await load('');shell()});const profile=document.querySelector('#myProfile');profile.onclick=e=>{if(e.target.closest('#logout'))return;state.view='profile';shell()};profile.onkeydown=e=>{if(e.key==='Enter'){state.view='profile';shell()}};document.querySelector('#logout').onclick=()=>{localStorage.removeItem('nexa_user');localStorage.removeItem('nexa_token');state.user=null;state.token=null;landing()};renderView()}
+function shell(){
+    app.innerHTML=`<div class="app-shell">${nav()}<main class="content" id="content"></main></div>`;
+
+    document.querySelectorAll('[data-view]').forEach(b=>b.onclick=async()=>{
+        state.view=b.dataset.view;
+        if(state.view==='feed')await load('');
+        shell();
+    });
+
+    const profile=document.querySelector('#myProfile');
+
+    profile.onclick=e=>{
+        if(e.target.closest('#logout'))return;
+        state.view='profile';
+        shell();
+    };
+
+    profile.onkeydown=e=>{
+        if(e.key==='Enter'){
+            state.view='profile';
+            shell();
+        }
+    };
+
+    document.querySelector('#logout').onclick=()=>{
+        localStorage.removeItem('nexa_user');
+        localStorage.removeItem('nexa_token');
+        state.user=null;
+        state.token=null;
+        landing();
+    };
+
+    const nexaLogo=document.querySelector('#nexaLogo');
+
+    if(nexaLogo){
+        nexaLogo.onclick=()=>{
+            localStorage.removeItem('nexa_user');
+            localStorage.removeItem('nexa_token');
+            state.user=null;
+            state.token=null;
+            landing();
+        };
+    }
+
+    renderView();
+}
 function renderView(){if(state.view==='feed')feedPage();if(state.view==='explore')explorePage();if(state.view==='create')createPage();if(state.view==='profile')profilePage()}
 function feedPage(){const c=document.querySelector('#content');const titulo=state.selectedArea?`Explorando: ${esc(state.selectedArea)}`:'Início';c.innerHTML=`<header class="page-head"><div><span class="eyebrow">${state.selectedArea?'ÁREA SELECIONADA':'PARA VOCÊ'}</span><h1>${titulo}</h1></div><button class="primary" id="newPost">＋ Nova publicação</button></header><section class="feed-layout"><div><div class="welcome-card"><div><small>Bom dia,</small><h2>${esc(state.user?.nome||state.user?.displayName||'profissional')}.</h2><p>${state.selectedArea?'Veja somente publicações desta área.':'O que você aprendeu recentemente?'}</p></div><button class="secondary" id="quickPost">Compartilhar algo</button></div><div class="filter-row"><button class="chip ${!state.selectedArea?'active':''}" data-area="">Tudo</button>${[...new Set(state.areas.map(a=>a.nicho_area))].slice(0,5).map(a=>`<button class="chip ${state.selectedArea?.toLowerCase()===a.toLowerCase()?'active':''}" data-area="${esc(a)}">${esc(a)}</button>`).join('')}</div><div class="posts">${state.feed.length?state.feed.map(postCard).join(''):`<div class="empty"><b>Nenhuma publicação nesta área.</b><p>Escolha outra área ou volte para Tudo.</p></div>`}</div></div><aside class="right-col"><div class="side-card"><span class="eyebrow">EM ALTA</span><h3>Áreas para explorar</h3>${state.areas.slice(0,5).map((a,i)=>`<div class="trend"><span>0${i+1}</span><div><b>${esc(a.nicho_area)}</b><small>${a.tempo_area||0} anos de experiência</small></div></div>`).join('')||'<p class="muted">Nenhuma área cadastrada ainda.</p>'}</div><div class="side-card accent-card"><span class="eyebrow">NEXA</span><h3>Conhecimento cresce quando circula.</h3><p>Compartilhe uma experiência útil com sua rede.</p></div></aside></section>`;document.querySelector('#newPost').onclick=document.querySelector('#quickPost').onclick=()=>{state.view='create';shell()};document.querySelectorAll('[data-area]').forEach(b=>b.onclick=async()=>{await load(b.dataset.area);feedPage()});bindPostActions()}
 function postCard(p){const comments=(p.comentarios||[]).map(c=>`<div class="comment"><b>${esc(c.nome)}</b><span>${esc(c.mensagem)}</span></div>`).join('');return `<article class="post" data-post-id="${p.id}"><header><div class="post-user"><button class="post-author" data-profile="${p.id_cadastro}" aria-label="Abrir perfil de ${esc(p.nome)}">${avatar({nome:p.nome,foto_url:p.foto_url})}</button><button class="post-author-info" data-profile="${p.id_cadastro}"><b>${esc(p.nome)}</b><small>${esc(p.nicho_area||'Comunidade')}</small></button></div><button class="post-more" aria-label="Mais opções">•••</button></header><p>${esc(p.descricao)}</p>${p.imagem_url?`<img class="post-img" src="${esc(p.imagem_url)}" alt="Imagem da publicação" loading="lazy" onerror="this.style.display='none'">`:''}<footer><button class="post-action ${p.curtiu?'liked':''}" data-like="${p.id}">${p.curtiu?'♥':'♡'} Curtir <b>${p.curtidas||0}</b></button><button class="post-action" data-comments="${p.id}">◯ ${p.comentarios?.length||0} comentários</button><button class="post-action" data-share="${p.id}">↗ Compartilhar</button></footer><section class="comments" id="comments-${p.id}"><div class="comment-list">${comments||'<small class="muted">Nenhum comentário ainda.</small>'}</div><form class="comment-form" data-comment-form="${p.id}"><input name="mensagem" maxlength="300" required placeholder="Escreva um comentário..."><button class="primary">Enviar</button></form></section></article>`}
