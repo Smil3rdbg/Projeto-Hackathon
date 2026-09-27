@@ -2,7 +2,28 @@ const API = window.NEXA_CONFIG?.API_URL || '/api/v1';
 const app=document.querySelector('#app');
 const state={user:JSON.parse(localStorage.getItem('nexa_user')||'null'),token:localStorage.getItem('nexa_token'),view:'feed',feed:[],areas:[],selectedArea:''};
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
-function avatar(user,className='avatar'){const name=user?.nome||user?.displayName||'N';const url=user?.foto_url;return url?`<div class="${className}"><img src="${esc(url)}" alt="Foto de perfil de ${esc(name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${esc(name[0])}</span></div>`:`<div class="${className}"><span>${esc(name[0])}</span></div>`}
+function avatar(user, className = 'avatar') {
+    const name = user?.nome || user?.displayName || 'N';
+    const url = user?.foto_url;
+
+    // Se existir foto, mostra SOMENTE a foto.
+    if (url) {
+        return `
+            <div class="${className}">
+                <img
+                    src="${esc(url)}"
+                    alt="Foto de perfil de ${esc(name)}"
+                >
+            </div>
+        `;
+    }
+
+    // Se não existir foto, deixa o avatar vazio.
+    // NÃO mostra nenhuma letra.
+    return `
+        <div class="${className}"></div>
+    `;
+}{const name=user?.nome||user?.displayName||'N';const url=user?.foto_url;return url?`<div class="${className}"><img src="${esc(url)}" alt="Foto de perfil de ${esc(name)}" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'"><span>${esc(name[0])}</span></div>`:`<div class="${className}"><span>${esc(name[0])}</span></div>`}
 async function api(path,opt={}){const headers={'Content-Type':'application/json','x-user-id':String(state.user?.id||''),...(opt.headers||{})};const r=await fetch(API+path,{...opt,headers});const raw=await r.json().catch(()=>null);const data=raw?.data??raw;if(!r.ok)throw new Error(raw?.message||'Erro na API');return data}
 function logo(){return `<div class="logo"><span class="logo-mark">N</span><span>Nexa</span></div>`}
 function landing(){app.innerHTML=`<main class="landing"><nav>${logo()}<div><button class="link" data-auth="login">Entrar</button><button class="primary" data-auth="register">Criar conta</button></div></nav><section class="landing-grid"><div><span class="eyebrow">CONEXÕES QUE GERAM OPORTUNIDADES</span><h1>Encontre pessoas que <em>entendem</em> o que você faz.</h1><p>Compartilhe experiências, descubra profissionais da sua área e transforme conhecimento em conexões reais.</p><div class="actions"><button class="primary large" data-auth="register">Começar agora →</button><button class="secondary large" data-auth="login">Já tenho uma conta</button></div><div class="proof"><b>+2.400</b> profissionais conectados <span>•</span> <b>120</b> áreas ativas</div></div><div class="hero-visual"><div class="float-card a"><b>Design de Produto</b><small>328 profissionais</small></div><div class="orb">N</div><div class="float-card b"><b>Desenvolvimento</b><small>512 profissionais</small></div></div></section><section class="benefits"><article><b>01</b><h3>Descubra</h3><p>Encontre conteúdo e pessoas por área de atuação.</p></article><article><b>02</b><h3>Compartilhe</h3><p>Publique aprendizados, projetos e experiências.</p></article><article><b>03</b><h3>Conecte</h3><p>Crie uma rede relevante para sua jornada.</p></article></section></main>`;document.querySelectorAll('[data-auth]').forEach(b=>b.onclick=()=>auth(b.dataset.auth))}
