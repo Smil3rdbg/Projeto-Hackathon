@@ -25,7 +25,24 @@ function avatar(user, className = 'avatar') {
     `;
 }
 async function api(path,opt={}){const headers={'Content-Type':'application/json','x-user-id':String(state.user?.id||''),...(opt.headers||{})};const r=await fetch(API+path,{...opt,headers});const raw=await r.json().catch(()=>null);const data=raw?.data??raw;if(!r.ok)throw new Error(raw?.message||'Erro na API');return data}
-function logo(){return `<div class="logo"><span class="logo-mark">N</span><span>Nexa</span></div>`}
+function logo(){
+    return `
+        <button class="logo logo-home" id="nexaLogo" type="button" title="Sair da conta">
+            <span class="logo-mark">N</span>
+            <span>Nexa</span>
+        </button>
+    `;
+}
+function logout(){
+    localStorage.removeItem('nexa_user');
+    localStorage.removeItem('nexa_token');
+
+    state.user = null;
+    state.token = null;
+    state.view = 'feed';
+
+    landing();
+}
 function landing(){app.innerHTML=`<main class="landing"><nav>${logo()}<div><button class="link" data-auth="login">Entrar</button><button class="primary" data-auth="register">Criar conta</button></div></nav><section class="landing-grid"><div><span class="eyebrow">CONEXÕES QUE GERAM OPORTUNIDADES</span><h1>Encontre pessoas que <em>entendem</em> o que você faz.</h1><p>Compartilhe experiências, descubra profissionais da sua área e transforme conhecimento em conexões reais.</p><div class="actions"><button class="primary large" data-auth="register">Começar agora →</button><button class="secondary large" data-auth="login">Já tenho uma conta</button></div><div class="proof"><b>+2.400</b> profissionais conectados <span>•</span> <b>120</b> áreas ativas</div></div><div class="hero-visual"><div class="float-card a"><b>Design de Produto</b><small>328 profissionais</small></div><div class="orb">N</div><div class="float-card b"><b>Desenvolvimento</b><small>512 profissionais</small></div></div></section><section class="benefits"><article><b>01</b><h3>Descubra</h3><p>Encontre conteúdo e pessoas por área de atuação.</p></article><article><b>02</b><h3>Compartilhe</h3><p>Publique aprendizados, projetos e experiências.</p></article><article><b>03</b><h3>Conecte</h3><p>Crie uma rede relevante para sua jornada.</p></article></section></main>`;document.querySelectorAll('[data-auth]').forEach(b=>b.onclick=()=>auth(b.dataset.auth))}
 function auth(mode){const login=mode==='login';app.innerHTML=`<main class="auth-page"><section class="auth-art"><div>${logo()}<h1>${login?'Que bom ter você de volta.':'Sua próxima conexão começa aqui.'}</h1><p>Nexa aproxima pessoas por conhecimento, experiência e interesses profissionais.</p></div><small>© 2026 Nexa</small></section><section class="auth-panel"><button class="back" id="back">← Voltar</button><div class="auth-box"><span class="eyebrow">${login?'ACESSAR CONTA':'CRIAR CONTA'}</span><h2>${login?'Entre na Nexa':'Faça parte da Nexa'}</h2><p>${login?'Continue de onde parou.':'Leva menos de um minuto.'}</p><form id="authForm">${login?'':`<label>Nome<input name="displayName" required maxlength="50" placeholder="Como devemos chamar você?"></label><label>Usuário<input name="username" required minlength="3" placeholder="seu.usuario"></label>`}<label>E-mail<input name="email" type="email" required maxlength="50" placeholder="voce@email.com"></label><label>Senha<input name="password" type="password" required minlength="8" placeholder="••••••••"></label>${login?'':`<label>Confirmar senha<input name="confirmPassword" type="password" required minlength="8" placeholder="••••••••"></label>`}<button class="primary full">${login?'Entrar':'Criar minha conta'}</button></form><button class="switch" id="swap">${login?'Ainda não tem conta? Criar agora':'Já possui conta? Entrar'}</button></div></section></main>`;document.querySelector('#back').onclick=landing;document.querySelector('#swap').onclick=()=>auth(login?'register':'login');document.querySelector('#authForm').onsubmit=async e=>{e.preventDefault();const body=Object.fromEntries(new FormData(e.target));try{const data=await api('/auth/'+(login?'login':'register'),{method:'POST',body:JSON.stringify(body)});state.user=data.user;state.token=data.token;localStorage.setItem('nexa_user',JSON.stringify(state.user));if(state.token)localStorage.setItem('nexa_token',state.token);await load();shell();if(!login)toast('Conta criada com sucesso!')}catch(err){toast(err.message)}}}
 async function load(area=''){state.selectedArea=area;state.feed=await api('/feed'+(area?`?area=${encodeURIComponent(area)}`:''));state.areas=await api('/areas')}
